@@ -71,15 +71,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final List<String> requiredSDKPermissions = new ArrayList<String>();
-        requiredSDKPermissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        requiredSDKPermissions.add(Manifest.permission.INTERNET);
-        requiredSDKPermissions.add(Manifest.permission.ACCESS_WIFI_STATE);
-        requiredSDKPermissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
-        requiredSDKPermissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
-        ActivityCompat.requestPermissions(this,
-                requiredSDKPermissions.toArray(new String[requiredSDKPermissions.size()]),
-                1);
+
 
         pinPoint = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.current_location), 32, 32, false);
         markerDefault = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.pin_point), doubleX, doubleY, false);
