@@ -11,6 +11,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class ImageRequest {
+    static String tr;
+    static String bl;
+
     public Bitmap getImage(String path) {
         String serverUrl = "https://image.maps.cit.api.here.com/mia/1.6/mapview";
         URL url;
@@ -22,6 +25,11 @@ public class ImageRequest {
 
             urlConnection = (HttpURLConnection) url.openConnection();
             InputStream in = urlConnection.getInputStream();
+
+            tr = urlConnection.getHeaderField("Viewport-Top-Right");
+            bl = urlConnection.getHeaderField("Viewport-Bottom-Left");
+
+            Log.d("tg", tr + " " + bl);
 
             Bitmap image = BitmapFactory.decodeStream(in);
 
