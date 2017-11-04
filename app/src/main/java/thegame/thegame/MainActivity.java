@@ -3,8 +3,12 @@ package thegame.thegame;
 import android.Manifest;
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.PointF;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Debug;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -13,11 +17,14 @@ import android.util.Log;
 import android.widget.ImageView;
 
 import com.here.android.mpa.common.GeoBoundingBox;
+import com.here.android.mpa.common.Image;
 import com.here.android.mpa.common.GeoCoordinate;
 import com.here.android.mpa.common.OnEngineInitListener;
 import com.here.android.mpa.mapping.Map;
 import com.here.android.mpa.mapping.MapFragment;
-//import com.here.android.mpa.mapping.customization.*;
+import com.here.android.mpa.mapping.MapMarker;
+import com.here.android.mpa.mapping.MapObject;
+import com.here.android.mpa.mapping.MapState;
 
 
 import java.util.ArrayList;
@@ -27,9 +34,10 @@ public class MainActivity extends AppCompatActivity {
 
     private MapFragment mapFragment;
     private ImageView mapImage;
+    private ImageView coverImage;
     private Map map;
 
-    private final double ZOOM = 14;
+    public static final double ZOOM = 14.2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +55,8 @@ public class MainActivity extends AppCompatActivity {
                 requiredSDKPermissions.toArray(new String[requiredSDKPermissions.size()]),
                 1);
 
-        mapImage = (ImageView)this.findViewById(R.id.mapimage);
+        mapImage = this.findViewById(R.id.mapimage);
+        coverImage = this.findViewById(R.id.coverimage);
         mapFragment = (MapFragment)this.getFragmentManager().findFragmentById(R.id.mapfragment);
 
         if(mapFragment != null) {
@@ -58,16 +67,58 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("tg", map.getMinZoomLevel() + " " + map.getMaxZoomLevel());
                     map.setMapScheme(Map.Scheme.SATELLITE_DAY);
                     map.setZoomLevel(ZOOM);
+
+                    final GeoCoordinate phys = new GeoCoordinate(58.3664063, 26.6885759);
+
+                    Image im = new Image();
+                    try{
+                        Bitmap coin = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.the_game_coin);
+                        //im.setImageResource(R.drawable.the_game_coin);
+                        im.setBitmap(Bitmap.createScaledBitmap(coin, 48, 48, false));
+                    } catch (Exception e) {
+                        Log.d("rg", e.toString());
+                    }
+
+                    MapMarker mapObject = new MapMarker(phys, im);
+                    map.addMapObject(mapObject);
+                    map.addTransformListener(new Map.OnTransformListener() {
+                        @Override
+                        public void onMapTransformStart() {
+                            map.setZoomLevel(Math.max(map.getZoomLevel(), ZOOM));
+                        }
+
+                        @Override
+                        public void onMapTransformEnd(MapState mapState) {
+
+                        }
+                    });
                 }
             });
         }
+        //createCoin();
+    }
 
-        ImageRequest imageRequest = new ImageRequest();
-        String request = "mapview?c=52.5159%2C13.3777&" +
-                "z=14&" +
-                "w=2048&h=2048&" +
-                "f=1&" +
-                "app_id=DemoAppId01082013GAL&app_code=AJKnXv84fjrb0KIHawS0Tg";
-        Bitmap map = imageRequest.getImage();
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+
+        MapFiller mapFiller = new MapFiller(mapImage);
+        mapFiller.execute();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if(hasFocus) {
+            uncoverMap();
+        }
+    }
+
+    public void uncoverMap() {
+        coverImage.setImageAlpha(0);
+    }
+
+    public void createCoin(GeoCoordinate geoCoordinate) {
+
     }
 }
