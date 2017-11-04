@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private Bitmap markerPink;
 
     public static final double ZOOM = 14.2;
+    private String userId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,8 +89,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         try{
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+            final long pollTime = 1000;
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, pollTime, 0, this);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, pollTime, 0, this);
         } catch (SecurityException e) {
             Log.d("tg", e.toString());
         }
@@ -103,6 +105,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 createMarkerStatic(motionEvent.getX(), motionEvent.getY(), markerYellow);
+                PointAdder pointAdder = new PointAdder(userId, getRealCoords(motionEvent.getX(), motionEvent.getY()));
+                pointAdder.execute();
                 return false;
             }
         });
@@ -112,9 +116,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 @Override
                 public void onEngineInitializationCompleted(Error error) {
                     map = mapFragment.getMap();
-                    Log.d("tg", map.getMinZoomLevel() + " " + map.getMaxZoomLevel());
-                    map.setMapScheme(Map.Scheme.SATELLITE_DAY);
                     map.setZoomLevel(ZOOM);
+                    map.setMapScheme(Map.Scheme.SATELLITE_DAY);
 
                     createMarker(phys, markerDefault);
                     createMarker(chem, markerDefault);
@@ -122,10 +125,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     createMarker(louna, markerDefault);
 
                     Image im = new Image();
-                    try{
+                    try {
                         im.setBitmap(pinPoint);
                     } catch (Exception e) {
-                        Log.d("rg", e.toString());
+                        Log.d("tg", e.toString());
                     }
 
                     locationMarker = new MapMarker(new GeoCoordinate(0, 0), im);
@@ -169,13 +172,21 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     @Override
     public void onProviderDisabled(String s) {
-        Log.d("tg", "Statis changed " + s);
+        Log.d("tg", "Status changed " + s);
     }
 
     @Override
     public void onLocationChanged(Location location) {
         Log.d("tg", "Location " + location.toString());
         locationMarker.setCoordinate(new GeoCoordinate(location.getLatitude(), location.getLongitude()));
+        if(userId != null) {
+            Pinger pinger  = new Pinger(userId, new Pair<>(location.getLatitude(), location.getLongitude()));
+            pinger.execute();
+        }
+        else {
+            Register register = new Register("testname", this, new Pair<>(location.getLatitude(), location.getLongitude()));
+            register.execute();
+        }
     }
 
     @Override
@@ -192,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         try{
             im.setBitmap(markerBitmap);
         } catch (Exception e) {
-            Log.d("rg", e.toString());
+            Log.e("rg", e.toString());
         }
 
         MapMarker mapObject = new MapMarker(geoCoordinate, im);
@@ -213,6 +224,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         createMarker(new GeoCoordinate(realCoord.first, realCoord.second), markerPink);
     }
 
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
     public Pair<Double, Double> getRealCoords(double x, double y) {
         double centerX = mapImage.getWidth() / 2;
         double centerY = mapImage.getHeight() / 2;
@@ -229,6 +244,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         double realN = realCenterX + (topRightN - bottomLeftN) / 2 * (centerY - y) / centerY;
         double realE = realCenterY + (topRightE - bottomLeftE) / 2 * (x - centerX) / centerX;
 
-        return new Pair<>(realN, realE);
+        return
+
+                new Pair<>(realN, realE);
     }
 }

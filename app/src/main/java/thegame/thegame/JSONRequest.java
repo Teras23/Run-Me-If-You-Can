@@ -9,7 +9,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class JSONRequest {
-    private static final String serverURL = "";
+    public static final String serverURL = "http://172.19.23.250:8080";
     public String getJSON(String path) {
         URL url;
         HttpURLConnection urlConnection;
@@ -18,11 +18,13 @@ public class JSONRequest {
 
         try {
             url = new URL(serverURL + path);
-            Log.i("JSONRequest", "JSON Request to: " + url.toString());
+            Log.d("tg", "JSON Request to: " + url.toString());
 
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.addRequestProperty("Cache-Control", "no-cache");
             InputStream in = urlConnection.getInputStream();
+
+            Log.d("tg", "response " + urlConnection.getResponseCode());
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
@@ -33,9 +35,21 @@ public class JSONRequest {
 
             urlConnection.disconnect();
         } catch(Exception e) {
-            Log.e("JSONRequest", "Error getting json from server:\n" + e.toString());
+            Log.e("tg", "Error getting json from server:\n" + e.toString());
         }
 
         return data.toString();
+    }
+
+    public String addPoint(String userId, double latitude, double longitude) {
+        return getJSON("/add/point?userId=" + userId + "&latitude=" + longitude + "&longitude=" + latitude);
+    }
+
+    public String ping(String userId, double latitude, double longitude) {
+        return getJSON("/ping?userId=" + userId + "&latitude=" + longitude + "&longitude=" + latitude);
+    }
+
+    public String register(String name, double latitude, double longitude) {
+        return getJSON("/user/register?name=" + name + "&latitude=" + longitude + "&longitude=" + latitude);
     }
 }

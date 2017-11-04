@@ -9,6 +9,10 @@ import android.util.Log;
 import android.util.Pair;
 import android.widget.ImageView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Created by teras on 4.11.17.
  */
@@ -46,6 +50,7 @@ public class MapFiller extends AsyncTask<Void, Void, Bitmap> {
         } catch (Exception e) {
             Log.e("tg", "Error reading JSON:\n" + e.toString());
         }
+
         return bitmap;
     }
 
