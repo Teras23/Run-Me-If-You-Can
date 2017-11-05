@@ -18,6 +18,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -34,6 +35,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
+
+    LinearLayout winlose;
+
 
     private MapFragment mapFragment;
     private ImageView mapImage;
@@ -82,6 +86,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        winlose = findViewById(R.id.endgame);
+        winlose.setVisibility(View.INVISIBLE); // change to VISIBLE when game ends
 
         mainActivity = this;
 
