@@ -21,7 +21,7 @@ import org.json.JSONObject;
 
 public class MapFiller extends AsyncTask<Void, Void, Bitmap> {
 
-    final static double size = 0.0065;
+    final static double size = 0.0025;
     static Pair<Double, Double> lastCenter = new Pair<>(0.0, 0.0);
 
     private MainActivity mainActivity;

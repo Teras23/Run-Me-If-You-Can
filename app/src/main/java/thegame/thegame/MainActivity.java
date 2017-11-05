@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.here.android.mpa.common.Image;
 import com.here.android.mpa.common.GeoCoordinate;
@@ -49,8 +50,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     final GeoCoordinate museum = new GeoCoordinate(58.3734098,26.7061349);
     final GeoCoordinate louna = new GeoCoordinate(58.3566391,26.6756017);
 
-    final int doubleX = 32;
-    final int doubleY = 64;
+    final int doubleX = 60;
+    final int doubleY = 120;
 
     private Bitmap pinPoint;
     private Bitmap markerDefault;
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private Bitmap markerYellow;
     private Bitmap markerPink;
 
-    public static final double ZOOM = 14.2;
+    public static final double ZOOM = 16;
     private String userId = null;
     private String playerName = null;
 
@@ -74,6 +75,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private ArrayList<Pair<Double, Double>> opponentHistory;
     private MainActivity mainActivity;
 
+    private int currentMarkerCount;
+    private final int maxMartkerCount = 3;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,6 +88,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         lastLocation = null;
         gameRunning = false;
         lastWating = true;
+
+        currentMarkerCount = 0;
 
         pinPoint = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.current_location), 32, 32, false);
         markerDefault = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.pin_point), doubleX, doubleY, false);
@@ -126,9 +132,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if(gameRunning) {
-                    createMarkerStatic(motionEvent.getX(), motionEvent.getY(), markerYellow);
-                    PointAdder pointAdder = new PointAdder(userId, getRealCoords(motionEvent.getX(), motionEvent.getY()));
-                    pointAdder.execute();
+                    if(currentMarkerCount < maxMartkerCount) {
+                        createMarkerStatic(motionEvent.getX(), motionEvent.getY(), markerYellow);
+                        PointAdder pointAdder = new PointAdder(userId, getRealCoords(motionEvent.getX(), motionEvent.getY()), mainActivity);
+                        pointAdder.execute();
+                    }
                 }
                 else {
                     initGame();
@@ -137,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             }
         });
 
-        final Handler ha=new Handler();
+        final Handler ha = new Handler();
         ha.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -150,12 +158,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     register.execute();
                 }
                 else {
-                    try{
-                        final long pollTime = 1000;
+                    try {
                         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, mainActivity);
                         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, mainActivity);
                     } catch (SecurityException e) {
-                        Log.d("tg", e.toString());
+                        Log.d("tg", "Secturity " + e.toString());
                     }
                 }
                 ha.postDelayed(this, 1000);
@@ -195,6 +202,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 }
             });
         }
+    }
+
+    public boolean isGameRunning() {
+        return gameRunning;
     }
 
     @Override
@@ -251,18 +262,20 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         return mapObject;
     }
 
+    //Created a marker on the image
     public ImageView createMarkerStatic(float x, float y, Bitmap markerBitmap) {
         ImageView marker = new ImageView(this);
         marker.setImageBitmap(markerBitmap);
 
-        marker.setX(x - 16);
-        marker.setY(y - 32);
+        marker.setX(x - doubleX / 2);
+        marker.setY(y - doubleY / 2);
 
         relativeLayout.addView(marker);
 
         Pair<Double, Double> realCoord = getRealCoords(x, y);
 
         opponentMarkers.put(realCoord, marker);
+        currentMarkerCount++;
         //TODO: remove makes the marker on the player map
 //        createMarker(new GeoCoordinate(realCoord.first, realCoord.second), markerPink);
         return marker;
@@ -356,6 +369,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                mapCanvas.invalidate();
                 setTitle("Playing with: " + opponent.getOpponentName());
             }
         });
@@ -365,7 +379,19 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         for(String id : gamePoints.keySet()) {
             GamePoint value = gamePoints.get(id);
             if(userGamePoints.containsKey(id)) {
-                //TODO:Update that marker
+                if(gamePoints.get(id).isCollected()) {
+                    userGamePoints.get(id).setCollected(true);
+
+                    Log.d("tg", "POINT COLLECTED");
+
+                    Image im = new Image();
+                    try {
+                        im.setBitmap(markerDefault);
+                    } catch (Exception e) {
+                        Log.d("tg", e.toString());
+                    }
+                    userGamePoints.get(id).getMapMarker().setIcon(im);
+                }
             }
             else {
                 Log.d("tg", "Marking new user marker at " + value.getLongitude() + " " + value.getLongitude());
@@ -384,6 +410,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             GamePoint value = gamePoints.get(id);
             if(opponentGamePoints.containsKey(id)) {
                 //TODO:Update that marker
+                GamePoint point = opponentGamePoints.get(id);
+                if(gamePoints.get(id).isCollected()) {
+                    opponentGamePoints.get(id).setCollected(true);
+
+                    Log.d("tg", "POINT COLLECTED");
+
+                    opponentGamePoints.get(id).getImageView().setImageBitmap(markerDefault);
+                }
             }
             else {
                 Pair<Double, Double> coords = new Pair<>(value.getLongitude(), value.getLatitude());
@@ -392,5 +426,26 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 opponentGamePoints.put(id, value);
             }
         }
+    }
+
+    public void gameOver() {
+        Log.d("tg", "GAME OVER!!!!");
+        gameRunning = false;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mapCanvas.invalidate();
+                setTitle("Playing with: " + opponent.getOpponentName());
+            }
+        });
+    }
+
+    public void showText(final String text) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(mainActivity.getApplicationContext(), text, Toast.LENGTH_LONG);
+            }
+        });
     }
 }

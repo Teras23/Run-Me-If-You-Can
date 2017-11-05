@@ -27,6 +27,7 @@ public class Pinger extends AsyncTask<Void, Void, Void> {
         longitude = loc.second;
         userId = id;
         this.mainActivity = mainActivity;
+        Log.d("tg", latidude + " " + longitude);
     }
 
     @Override
@@ -47,6 +48,11 @@ public class Pinger extends AsyncTask<Void, Void, Void> {
                 HashMap<String, GamePoint> user2GamePoints = getGamePoints(user2Points);
 
                 Opponent opponent = getOpponent(object.getJSONObject("opponent"));
+                boolean gameOver = object.getBoolean("gameOver");
+
+                if(gameOver) {
+                    mainActivity.gameOver();
+                }
 
                 mainActivity.updateUserGamePoints(user1GamePoints);
                 mainActivity.updateOpponentGamePoint(user2GamePoints);
