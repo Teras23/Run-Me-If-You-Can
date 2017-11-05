@@ -9,7 +9,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class JSONRequest {
-    public static final String serverURL = "http://172.19.23.250:8080";
+    public static final String serverURL = "http://eucolus.com:8080";
     public String getJSON(String path) {
         URL url;
         HttpURLConnection urlConnection;
@@ -23,8 +23,6 @@ public class JSONRequest {
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.addRequestProperty("Cache-Control", "no-cache");
             InputStream in = urlConnection.getInputStream();
-
-            Log.d("tg", "response " + urlConnection.getResponseCode());
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 

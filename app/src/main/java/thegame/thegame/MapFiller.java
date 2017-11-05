@@ -9,6 +9,8 @@ import android.util.Log;
 import android.util.Pair;
 import android.widget.ImageView;
 
+import com.here.android.mpa.common.GeoCoordinate;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,13 +21,15 @@ import org.json.JSONObject;
 
 public class MapFiller extends AsyncTask<Void, Void, Bitmap> {
 
-    final static double size = 0.0075;
+    final static double size = 0.0065;
     static Pair<Double, Double> lastCenter = new Pair<>(0.0, 0.0);
 
-    private ImageView image;
+    private MainActivity mainActivity;
+    private GeoCoordinate coordinate;
 
-    public MapFiller(ImageView image) {
-        this.image = image;
+    public MapFiller(MainActivity mainActivity, GeoCoordinate coords) {
+        this.mainActivity = mainActivity;
+        coordinate = coords;
     }
 
     @Override
@@ -33,14 +37,15 @@ public class MapFiller extends AsyncTask<Void, Void, Bitmap> {
         Bitmap bitmap = null;
 
         try {
-            double centerX = 58.3734098;
-            double centerY = 26.7061349;
+            double longitude = coordinate.getLongitude();
+            double latitude = coordinate.getLatitude();
 
-            lastCenter = new Pair<>(centerX, centerY);
+            lastCenter = new Pair<>(longitude, latitude);
 
             ImageRequest imageRequest = new ImageRequest();
-            String request = "?bbox=" + (centerX + size) + "," + (centerY - size) + "," + (centerX - size) + "," + (centerY + size) + "&" +
-                    "w=1080&h=840&" +
+            String request = "?bbox=" + (longitude + size) + "," + (latitude - size) + "," + (longitude - size) + "," + (latitude + size) + "&" +
+                    "w=" + mainActivity.getMapImageSize().first + "&" + "" +
+                    "h=" +  + mainActivity.getMapImageSize().second + "&" +
                     "f=0&" + //PNG fomat
                     "t=1&" + //Satellite
                     "app_id=g80UNADO9xYUvzX5nnVO&" +
@@ -57,7 +62,7 @@ public class MapFiller extends AsyncTask<Void, Void, Bitmap> {
     @Override
     protected void onPostExecute(Bitmap bitmap) {
         if(bitmap != null) {
-            image.setImageBitmap(bitmap);
+            mainActivity.startGame(bitmap);
         }
     }
 }

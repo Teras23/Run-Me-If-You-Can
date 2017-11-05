@@ -34,7 +34,7 @@ public class Register extends AsyncTask<Void, Void, String> {
             response = request.getJSON("/user/register?name=" + name + "&latitude=" + loc.first + "&longitude=" + loc.second + "&location=null");
             Log.d("tg", response);
         } catch (Exception e) {
-            Log.e("tg", "Error reading JSON:\n" + e.toString());
+            Log.e("tg", "Register: Error reading JSON:\n" + e.toString());
         }
         return response;
     }
@@ -43,14 +43,9 @@ public class Register extends AsyncTask<Void, Void, String> {
     protected void onPostExecute(String response) {
         try {
             JSONObject jsonArray = new JSONObject(response);
-            JSONObject user1 = jsonArray.getJSONObject("user1");
-            /*String user1 = user1.getString("id");
-            boolean waiting = jsonArray.getBoolean("waiting");
-            if(waiting) {
-                mainActivity.setUserId(user1);
-            }*/
+            mainActivity.setUserId(jsonArray.getString("id"));
         } catch (Exception e) {
-            Log.e("tg", "Error reading JSON:\n" + e.toString());
+            Log.e("tg", "Register: Error reading JSON:\n" + e.toString());
         }
     }
 }

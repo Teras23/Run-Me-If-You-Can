@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.TranslateAnimation;
 import android.widget.Button;
@@ -16,8 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HomeScreen extends AppCompatActivity {
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +43,6 @@ public class HomeScreen extends AppCompatActivity {
             }
         });
 
-
-
         final EditText username = findViewById(R.id.idUsername);
 
         Button cancel = findViewById(R.id.cancel);
@@ -60,19 +57,15 @@ public class HomeScreen extends AppCompatActivity {
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent map = new Intent(HomeScreen.this, MainActivity.class);
-                if (username.getText().toString().isEmpty()){
-                    username.setHint("Put in username");
-                } else {
-                    startActivity(map);
-                    finish();
-                }
+            Intent map = new Intent(HomeScreen.this, MainActivity.class);
+            if (username.getText().toString().isEmpty()){
+                username.setHint("Put in username");
+            } else {
+                map.putExtra("Name", username.getText().toString());
+                startActivity(map);
+                finish();
+            }
             }
         });
-
-
-
-
     }
-
 }
